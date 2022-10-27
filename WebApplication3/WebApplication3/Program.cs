@@ -1,11 +1,5 @@
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using WebApplication3.DAL;
 
 namespace WebApplication3
 {
@@ -13,14 +7,23 @@ namespace WebApplication3
     {
         public static void Main(string[] args)
         {
-            CreateHostBuilder(args).Build().Run();
-        }
+            var builder = WebApplication.CreateBuilder(args);
+            builder.Services.AddMvc();
+            builder.Services.AddDbContext<ApplicationDbContext>(opt =>
+            {
+                opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+            });
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.UseStartup<Startup>();
-                });
+
+            var app = builder.Build();
+            app.UseRouting();
+            app.UseStaticFiles();
+            app.MapControllerRoute(
+                name: "default",
+                pattern: "{controller=Home}/{action=index}/{id?}"
+                );
+
+            app.Run();
+        }
     }
 }
